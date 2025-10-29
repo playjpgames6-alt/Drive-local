@@ -1,0 +1,5 @@
+{
+  "name": "Drive Keep",
+  "description": "An application to store and organize links, images, and videos into groups, with data persistence simulated to work like Google Drive storage.",
+  "requestFramePermissions": []
+}
