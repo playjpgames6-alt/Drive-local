@@ -6,7 +6,7 @@ import GroupGrid from './components/GroupGrid';
 import GroupView from './components/GroupView';
 import AddItemModal from './components/AddItemModal';
 import AddGroupModal from './components/AddGroupModal';
-import { PlusIcon, FileUpIcon, FilePlusIcon } from './components/Icons';
+import { PlusIcon, FileUpIcon, FilePlusIcon, DriveIcon } from './components/Icons';
 
 const App: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -114,17 +114,17 @@ const App: React.FC = () => {
 
   if (!isSessionActive) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
-        <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-4">Welcome to Drive Keep</h1>
-        <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 text-center max-w-md">Organize your digital life. Your data is saved to a file on your computer, not in the cloud.</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-black">
+        <DriveIcon className="h-16 w-16 text-primary mb-6" />
+        <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8">Bem-vindo ao Drive Keep</h1>
         <div className="flex space-x-4">
           <button onClick={handleStartNewSession} className="flex items-center px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-colors">
             <FilePlusIcon className="w-5 h-5 mr-2" />
-            Start a New Session
+            Iniciar Nova Sessão
           </button>
           <button onClick={handleTriggerLoad} className="flex items-center px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors">
             <FileUpIcon className="w-5 h-5 mr-2" />
-            Load from File
+            Carregar do Arquivo
           </button>
         </div>
         <input type="file" ref={fileInputRef} onChange={handleLoadFile} accept=".json" className="hidden" />
@@ -137,7 +137,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <div className="min-h-screen bg-gray-100 dark:bg-black text-gray-800 dark:text-gray-200">
       <Header onSave={handleSaveFile} onLoad={handleTriggerLoad} onNew={handleReturnToHome} />
       <main className="p-4 sm:p-6 lg:p-8">
         {selectedGroup ? (
