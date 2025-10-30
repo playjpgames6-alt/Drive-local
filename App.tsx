@@ -1,18 +1,37 @@
 import React, { useState, useRef } from 'react';
-import { Group, Item } from './types';
+import { Group, Item, ItemType, LinkItem, VideoItem } from './types';
 import { fileService } from './services/driveService';
+import { aiService } from './services/aiService';
 import Header from './components/Header';
 import GroupGrid from './components/GroupGrid';
 import GroupView from './components/GroupView';
 import AddItemModal from './components/AddItemModal';
 import AddGroupModal from './components/AddGroupModal';
-import { PlusIcon, FileUpIcon, FilePlusIcon, DriveIcon } from './components/Icons';
+import StudyModeModal from './components/StudyModeModal';
+import { PlusIcon, FileUpIcon, FilePlusIcon, DriveIcon, BrainIcon } from './components/Icons';
+
+const getYoutubeVideoId = (videoUrl: string): string | null => {
+  try {
+      const urlObj = new URL(videoUrl);
+      let videoId = null;
+      if (videoUrl.includes('youtube.com/watch')) {
+          videoId = urlObj.searchParams.get('v');
+      } else if (videoUrl.includes('youtu.be/')) {
+          videoId = urlObj.pathname.substring(1);
+      }
+      return videoId;
+  } catch(e) {
+      return null;
+  }
+};
 
 const App: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [isAddItemModalOpen, setAddItemModalOpen] = useState(false);
   const [isAddGroupModalOpen, setAddGroupModalOpen] = useState(false);
+  const [isStudyModalOpen, setStudyModalOpen] = useState(false);
+  const [isGeneratingStudyGroup, setIsGeneratingStudyGroup] = useState(false);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -112,23 +131,73 @@ const App: React.FC = () => {
     setSelectedGroup(updatedGroups.find(g => g.id === selectedGroup.id) || null);
   };
 
+  const handleGenerateStudyGroup = async (topic: string) => {
+    setIsGeneratingStudyGroup(true);
+    try {
+      const resources = await aiService.generateStudyContent(topic);
+      const newItems: Item[] = resources.map((resource, index) => {
+        const baseItem = {
+          id: `item-${Date.now()}-${index}`,
+          title: resource.title,
+          createdAt: new Date().toISOString(),
+        };
+        if (resource.type === 'VIDEO') {
+          const videoId = getYoutubeVideoId(resource.url);
+          const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}` : '';
+          const thumbnailUrl = videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg`: undefined;
+          return { ...baseItem, type: ItemType.Video, url: resource.url, embedUrl, thumbnailUrl } as VideoItem;
+        }
+        return { ...baseItem, type: ItemType.Link, url: resource.url } as LinkItem;
+      });
+
+      const newGroup: Group = {
+        id: `group-${Date.now()}`,
+        name: `Estudos: ${topic}`,
+        items: newItems,
+        createdAt: new Date().toISOString(),
+      };
+
+      setGroups(prev => [...prev, newGroup]);
+      setIsSessionActive(true);
+      setStudyModalOpen(false);
+    } catch (error) {
+      console.error("Failed to generate study group:", error);
+      alert(`Error generating study materials: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsGeneratingStudyGroup(false);
+    }
+  };
+
+
   if (!isSessionActive) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-black">
-        <DriveIcon className="h-16 w-16 text-primary mb-6" />
-        <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8">Bem-vindo ao Drive Keep</h1>
-        <div className="flex space-x-4">
-          <button onClick={handleStartNewSession} className="flex items-center px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-colors">
-            <FilePlusIcon className="w-5 h-5 mr-2" />
-            Iniciar Nova Sessão
-          </button>
-          <button onClick={handleTriggerLoad} className="flex items-center px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors">
-            <FileUpIcon className="w-5 h-5 mr-2" />
-            Carregar do Arquivo
-          </button>
+      <>
+        <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-black">
+          <DriveIcon className="h-16 w-16 text-primary mb-6" />
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8 text-center">Bem-vindo ao Drive Keep</h1>
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+            <button onClick={handleStartNewSession} className="flex items-center justify-center px-6 py-3 bg-primary text-white font-semibold rounded-lg shadow-md hover:bg-primary-dark transition-colors w-60">
+              <FilePlusIcon className="w-5 h-5 mr-2" />
+              Iniciar Nova Sessão
+            </button>
+            <button onClick={handleTriggerLoad} className="flex items-center justify-center px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors w-60">
+              <FileUpIcon className="w-5 h-5 mr-2" />
+              Carregar do Arquivo
+            </button>
+            <button onClick={() => setStudyModalOpen(true)} className="flex items-center justify-center px-6 py-3 bg-purple-600 text-white font-semibold rounded-lg shadow-md hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 transition-colors w-60">
+              <BrainIcon className="w-5 h-5 mr-2" />
+              Modo de Estudo (IA)
+            </button>
+          </div>
+          <input type="file" ref={fileInputRef} onChange={handleLoadFile} accept=".json" className="hidden" />
         </div>
-        <input type="file" ref={fileInputRef} onChange={handleLoadFile} accept=".json" className="hidden" />
-      </div>
+        <StudyModeModal
+          isOpen={isStudyModalOpen}
+          onClose={() => setStudyModalOpen(false)}
+          onGenerate={handleGenerateStudyGroup}
+          isGenerating={isGeneratingStudyGroup}
+        />
+      </>
     );
   }
   
