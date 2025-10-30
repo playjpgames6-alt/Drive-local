@@ -122,17 +122,3 @@ export const FilePlusIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => 
     <line x1="9" y1="15" x2="15" y2="15"></line>
   </svg>
 );
-
-export const BrainIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v0A2.5 2.5 0 0 1 9.5 7v0A2.5 2.5 0 0 1 7 4.5v0A2.5 2.5 0 0 1 9.5 2Z" />
-        <path d="M14.5 2A2.5 2.5 0 0 1 17 4.5v0A2.5 2.5 0 0 1 14.5 7v0A2.5 2.5 0 0 1 12 4.5v0A2.5 2.5 0 0 1 14.5 2Z" />
-        <path d="M12 13.5V10" />
-        <path d="M10 9C7 9 7 13 10 13a2.5 2.5 0 0 1 2.5 2.5c0 1.5-1.5 1.5-1.5 3v1" />
-        <path d="M14 9c3 0 3 4-3 4a2.5 2.5 0 0 0-2.5 2.5c0 1.5 1.5 1.5 1.5 3v1" />
-        <path d="M4.5 10.5c-1.5 0-2.5.5-2.5 2.5s1 2.5 2.5 2.5" />
-        <path d="M19.5 10.5c1.5 0 2.5.5 2.5 2.5s-1 2.5-2.5 2.5" />
-        <path d="M12 22a2 2 0 0 0-2-2" />
-        <path d="M12 22a2 2 0 0 1 2-2" />
-    </svg>
-);
